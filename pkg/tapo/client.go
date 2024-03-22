@@ -76,7 +76,7 @@ func (c *Client) newConn() (net.Conn, error) {
 	}
 
 	req.URL.User = u.User
-	req.Header.Set("Content-Type", "multipart/mixed; boundary=--client-stream-boundary--")
+	req.Header.Set("Content-Type", "multipart/mixed; boundary=--data-boundary--")
 
 	conn, res, err := dial(req)
 	if err != nil {
@@ -157,7 +157,7 @@ func (c *Client) SetupStream() (err error) {
 
 // Handle - first run will be in probe state
 func (c *Client) Handle() error {
-	rd := multipart.NewReader(c.conn1, "--device-stream-boundary--")
+	rd := multipart.NewReader(c.conn1, "--data-boundary--")
 	demux := mpegts.NewDemuxer()
 
 	for {
@@ -225,7 +225,7 @@ func (c *Client) Close() (err error) {
 func (c *Client) Request(conn net.Conn, body []byte) (string, error) {
 	// TODO: fixme (size)
 	buf := bytes.NewBuffer(nil)
-	buf.WriteString("----client-stream-boundary--\r\n")
+	buf.WriteString("----data-boundary--\r\n")
 	buf.WriteString("Content-Type: application/json\r\n")
 	buf.WriteString("Content-Length: " + strconv.Itoa(len(body)) + "\r\n\r\n")
 	buf.Write(body)
@@ -235,7 +235,7 @@ func (c *Client) Request(conn net.Conn, body []byte) (string, error) {
 		return "", err
 	}
 
-	mpReader := multipart.NewReader(conn, "--device-stream-boundary--")
+	mpReader := multipart.NewReader(conn, "--data-boundary--")
 
 	for {
 		p, err := mpReader.NextRawPart()
